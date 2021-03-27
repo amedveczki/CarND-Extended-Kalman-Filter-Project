@@ -2,7 +2,11 @@
 #define TOOLS_H_
 
 #include <vector>
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #include "Eigen/Dense"
+#pragma GCC diagnostic pop
 
 class Tools {
  public:
