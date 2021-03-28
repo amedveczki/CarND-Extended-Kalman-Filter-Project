@@ -13,39 +13,55 @@ KalmanFilter::KalmanFilter() {}
 KalmanFilter::~KalmanFilter() {}
 
 void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
-                        MatrixXd &H_in, MatrixXd &R_in, MatrixXd &Q_in) {
+			float noise_ax, float noise_ay)
+    : noise_ax_(noise_ax)
+    , noise_ay_(noise_ay)
+{
   x_ = x_in;
   P_ = P_in;
   F_ = F_in;
-  H_ = H_in;
-  R_ = R_in;
-  Q_ = Q_in;
 }
 
-void KalmanFilter::Predict() {
-  x_ = F_ * x_;
-  MatrixXd Ft = F_.transpose();
-  P_ = F_ * P_ * Ft + Q_;
+void KalmanFilter::Predict(float dt) {
+    F_(0, 2) = dt;
+    F_(1, 3) = dt;
+
+    const float dt2 = dt*dt;
+    const float dt3 = dt2 * dt / 2.0f;
+    const float dt4 = dt3 * dt / 2.0f;
+
+    // Q: noise covariance matrix
+    Matrix4d Q(kf_.Q_ << dt4 * noise_ax, 0,              dt3 * noise_ax, 0,
+	      0             , dt4 * noise_ay, 0             , dt3 * noise_ay,
+	      dt3 * noise_ax, 0,              dt2 * noise_ax, 0,
+	      0             , dt3 * noise_ay, 0             , dt2 * noise_ay;
+    x_ = F_ * x_;
+    MatrixXd Ft = F_.transpose();
+    P_ = F_ * P_ * Ft + Q_;
 }
 
-void KalmanFilter::Update(const VectorXd &z) {
-  VectorXd z_pred = H_ * x_;
-  VectorXd y = z - z_pred;
-  MatrixXd Ht = H_.transpose();
-  MatrixXd S = H_ * P_ * Ht + R_;
-  MatrixXd Si = S.inverse();
-  MatrixXd PHt = P_ * Ht;
-  MatrixXd K = PHt * Si;
+void KalmanFilter::Update(const VectorXd &z, const MatrixXd& H, const MatrixXd& R) {
+  const MatrixXd y = z - H*x_;
+  const MatrixXd S = H*P_*H.transpose() + R;
+  const MatrixXd K = P_*H.transpose()*S.inverse();
+  const MatrixXd I = MatrixXd::Identity(2, 2);
 
-  //new estimate
-  x_ = x_ + (K * y);
-  long x_size = x_.size();
-  MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * H_) * P_;
+
+  x_ = x_ + K*y;
+  P_ = (I - K*H_laser)*P;
 }
 
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
+void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd& H, const MatrixXd& R) {
   /**
    * TODO: update the state by using Extended Kalman Filter equations
    */
+
+  const MatrixXd y = z - H*x_;
+  const MatrixXd S = H*P_*H.transpose() + R;
+  const MatrixXd K = P_*H.transpose()*S.inverse();
+  const MatrixXd I = MatrixXd::Identity(2, 2);
+
+
+  x_ = x_ + K*y;
+  P_ = (I - K*H_laser)*P;
 }

@@ -33,6 +33,11 @@ class FusionEKF {
   void ProcessMeasurement(const MeasurementPackage &measurement_pack);
 
   /**
+   * Initializes the Kalman filter with the first state and matrices
+   */
+  void InitKalman(const VectorXd &x);
+
+  /**
    * Kalman Filter update and prediction math lives in here.
    */
   KalmanFilter ekf_;
