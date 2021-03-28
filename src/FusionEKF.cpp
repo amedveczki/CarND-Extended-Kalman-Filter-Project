@@ -20,7 +20,7 @@ void FusionEKF::InitKalman(const VectorXd &x)
   Matrix4d F;
   F.Identity(4);
 
-  const float noise_axy = 9.0f;
+  const double noise_axy = 9.0f;
 
   ekf_.Init(x, P, F, noise_axy, noise_axy);
 }
@@ -77,16 +77,17 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       // TODO: Convert radar from polar to cartesian coordinates 
       //         and initialize state.
 
-        // input is (rho (angle), phi (hypotenuse), rho' (angle rate)
-        float rho = measurement_pack.raw_measurements_[0],
+        // input is (rho (distance), phi (angle), rho' (angle rate)
+        double rho = measurement_pack.raw_measurements_[0],
                 phi = measurement_pack.raw_measurements_[1], 
                 rho_ = measurement_pack.raw_measurements_[2];
-        if (rho > EIGEN_PI || rho < EIGEN_PI)
+        if (phi > EIGEN_PI || rho < EIGEN_PI)
         {
-            std::cout << "Rho is bigger/smaller than pi: " << rho << " which is " << rho/EIGEN_PI << " times of pi" << std::endl;
+            std::cout << "Phi is bigger/smaller than pi: " << rho << " which is " << rho/EIGEN_PI << " times of pi" << std::endl;
         }
-        x << cos(rho) * phi, sin(rho) * phi,
-                    cos(rho) * rho_, sin(rho) * rho_;
+		// TODO: is rho_ needed here?
+        x << cos(phi) * rho, sin(phi) * rho,
+                 cos(phi) * rho_, sin(phi) * rho_;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
         x << measurement_pack.raw_measurements_[0], 
@@ -110,7 +111,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Prediction
    */
 
-  float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
+  double dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
   previous_timestamp_ = measurement_pack.timestamp_;
 
 
@@ -120,23 +121,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Update
    */
 
-  /**
-   * TODO:
-   * - Use the sensor type to perform the update step.
-   * - Update the state and covariance matrices.
-   */
-
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      float rho = measurement_pack.raw_measurements_[0],
-          phi = measurement_pack.raw_measurements_[1], 
-          rho_ = measurement_pack.raw_measurements_[2];
-
-	const auto Hj = tools.CalculateJacobian(ekf_.x_);
-
+      const auto Hj = tools.CalculateJacobian(ekf_.x_);
+      ekf_.Update(measurement_pack.raw_measurements_, Hj, R_radar_);
   } else {
-      const auto& z = measurement_pack.raw_measurements_;
-	  ekf_.H_ = H_laser;
-
+      ekf_.Update(measurement_pack.raw_measurements_, H, R_laser_);
   }
 
   // print the output

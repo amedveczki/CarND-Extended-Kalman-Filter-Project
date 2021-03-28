@@ -28,14 +28,14 @@ class KalmanFilter {
    * @param noise_ay Noise acceleration (y)
    */
   void Init(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
-			float noise_ax, float noise_ay);
+			double noise_ax, double noise_ay);
 
   /**
    * Prediction Predicts the state and the state covariance
    * using the process model
-   * @param delta_T Time between k and k+1 in s
+   * @param dt Time between k and k+1 in s
    */
-  void Predict();
+  void Predict(double dt);
 
   /**
    * Updates the state by using standard Kalman Filter equations
@@ -63,8 +63,8 @@ class KalmanFilter {
   // state transition matrix
   Eigen::MatrixXd F_;
 
-  float noise_ax_;
-  float noise_ay_;
+  double noise_ax_;
+  double noise_ay_;
 
 /*
   // process covariance matrix
