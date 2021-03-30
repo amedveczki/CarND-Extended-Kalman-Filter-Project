@@ -27,7 +27,7 @@ class KalmanFilter {
    * @param noise_ax Noise acceleration (x)
    * @param noise_ay Noise acceleration (y)
    */
-  void Init(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
+  void Init(const Eigen::VectorXd &x_in, const Eigen::MatrixXd &P_in, const Eigen::MatrixXd &F_in,
 			double noise_ax, double noise_ay);
 
   /**
@@ -43,7 +43,7 @@ class KalmanFilter {
    * @param H The H measurement matrix for non-extended Kalman filtering
    * @param R The R measurement covariance matrix for non-extended Kalman filtering
    */
-  void Update(const Eigen::VectorXd &z, const MatrixXd& H, const MatrixXd& R);
+  void Update(const Eigen::VectorXd &z, const Eigen::MatrixXd& H, const Eigen::MatrixXd& R);
 
   /**
    * Updates the state by using Extended Kalman Filter equations
@@ -51,7 +51,7 @@ class KalmanFilter {
    * @param H The H measurement matrix for Extended Kalman filtering
    * @param R The R measurement covariance matrix for Extended Kalman filtering
    */
-  void UpdateEKF(const Eigen::VectorXd &z, const MatrixXd& H, const MatrixXd& R);
+  void UpdateEKF(const Eigen::VectorXd &z, const Eigen::MatrixXd& H, const Eigen::MatrixXd& R);
 
 
   // state vector

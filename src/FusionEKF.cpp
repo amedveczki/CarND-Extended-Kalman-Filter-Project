@@ -4,7 +4,9 @@
 #include "tools.h"
 
 using Eigen::MatrixXd;
+using Eigen::Matrix4d;
 using Eigen::VectorXd;
+using Eigen::Vector4d;
 using std::cout;
 using std::endl;
 using std::vector;
@@ -12,13 +14,14 @@ using std::vector;
 void FusionEKF::InitKalman(const VectorXd &x)
 {
   // Hj_ will be updated at every radar update - TODO delete it?
-  Matrix4d P(1, 0, 0, 0,
+  Matrix4d P;
+  
+  P << 1, 0, 0, 0,
        0, 1, 0, 0,
        0, 0, 1000, 0,
-       0, 0, 0, 1000);
+       0, 0, 0, 1000;
 
-  Matrix4d F;
-  F.Identity(4);
+  Matrix4d F(Matrix4d::Identity(4,4));
 
   const double noise_axy = 9.0f;
 
@@ -81,9 +84,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         double rho = measurement_pack.raw_measurements_[0],
                 phi = measurement_pack.raw_measurements_[1], 
                 rho_ = measurement_pack.raw_measurements_[2];
-        if (phi > EIGEN_PI || rho < EIGEN_PI)
+        if (phi > M_PI || rho < M_PI)
         {
-            std::cout << "Phi is bigger/smaller than pi: " << rho << " which is " << rho/EIGEN_PI << " times of pi" << std::endl;
+            std::cout << "Phi is bigger/smaller than pi: " << rho << " which is " << rho/M_PI << " times of pi" << std::endl;
         }
 		// TODO: is rho_ needed here?
         x << cos(phi) * rho, sin(phi) * rho,
@@ -123,9 +126,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       const auto Hj = tools.CalculateJacobian(ekf_.x_);
-      ekf_.Update(measurement_pack.raw_measurements_, Hj, R_radar_);
+      ekf_.UpdateEKF(measurement_pack.raw_measurements_, Hj, R_radar_);
   } else {
-      ekf_.Update(measurement_pack.raw_measurements_, H, R_laser_);
+      ekf_.Update(measurement_pack.raw_measurements_, H_laser_, R_laser_);
   }
 
   // print the output

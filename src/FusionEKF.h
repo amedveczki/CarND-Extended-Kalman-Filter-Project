@@ -35,7 +35,7 @@ class FusionEKF {
   /**
    * Initializes the Kalman filter with the first state and matrices
    */
-  void InitKalman(const VectorXd &x);
+  void InitKalman(const Eigen::VectorXd &x);
 
   /**
    * Kalman Filter update and prediction math lives in here.

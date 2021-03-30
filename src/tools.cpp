@@ -2,7 +2,9 @@
 #include <iostream>
 
 using Eigen::VectorXd;
+using Eigen::Vector4d;
 using Eigen::MatrixXd;
+using Eigen::Matrix4d;
 using std::vector;
 
 Tools::Tools() {}
@@ -41,7 +43,7 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 
 	if (p2 == 0)
 	{
-		cout << "Division by zero" << endl;
+        std::cout << "Division by zero" << std::endl;
 		return Hj;
 	}
 	Hj << px/sp2, py/sp2, 0, 0,
@@ -50,4 +52,4 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 
 	return Hj;
 }
-}
+
