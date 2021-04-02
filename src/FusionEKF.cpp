@@ -62,6 +62,7 @@ FusionEKF::FusionEKF() {
 FusionEKF::~FusionEKF() {}
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
+    static int step = 0;
   /**
    * Initialization
    */
@@ -120,10 +121,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   ekf_.Predict(dt);
 
+  std::cout << " ================= Step " << ++step << " dt " << dt << ", type: " << ((measurement_pack.sensor_type_ == MeasurementPackage::RADAR) ? "RADAR" : "LASER" )<< " =============" << std::endl;
+  std::cout << "Prediction: " << ekf_.x_ << std::endl;
+  std::cout << "Predicted P: " << ekf_.P_ << std::endl;
+
   /**
    * Update
    */
 
+  std::cout << "Update -->" << std::endl;
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       const auto Hj = tools.CalculateJacobian(ekf_.x_);
       ekf_.UpdateEKF(measurement_pack.raw_measurements_, Hj, R_radar_);
